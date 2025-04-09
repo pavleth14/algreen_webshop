@@ -1,176 +1,266 @@
-import React, { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
-import { addCart } from "../redux/action";
-
-import Skeleton from "react-loading-skeleton";
-import "react-loading-skeleton/dist/skeleton.css";
-
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { addCart, updateCart, setTestCounter } from "../redux/action";
 import toast from "react-hot-toast";
+import Menu from "./Menu";
 
 const Products = () => {
+
+  const imgUrl = 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg';
+
   const [data, setData] = useState([]);
-  const [filter, setFilter] = useState(data);
-  const [loading, setLoading] = useState(false);
-  let componentMounted = true;
+  const [filteredData, setFilteredData] = useState([]);
+  const [cartData, setCartData] = useState([]);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [isFetched, setIsFetched] = useState(false);
+  const [categoryUrl, setCategoryUrl] = useState('');
+  const [cateogoryTagsUrl, setCategoryTagsUrl] = useState('');
+  const [testCounter, setTestCounter] = useState(0);
+  const [resetStorageApiUrl, setResetStorageApiUrl] = useState(false);
 
   const dispatch = useDispatch();
+  // const testCounter = useSelector((state) => state.cartItems.testCounter);  
 
-  const addProduct = (product) => {
-    dispatch(addCart(product));
+  const handleCategoryUrl = (param) => {
+    // Ensure categoryUrl only updates if it's different from the current state
+    if (categoryUrl !== param) {
+      // console.log('Category url: ', param);
+      setCategoryUrl(param);
+    }
+    console.log('url param:', param)
   };
+
+  const handleCategoryTagsUrl = (category, tags) => {
+    setCategoryUrl(category);
+    console.log('category: ', category);
+    setCategoryTagsUrl(tags);
+    console.log('tags: ', tags);
+  }
+
+  // Pavle vidi da li trebas da radis setFilteredData kad se menja categoryUrl...
+
+  // useEffect(() => {
+  //   // Reset filteredData whenever categoryUrl changes
+  //   setFilteredData([]);
+  // }, [categoryUrl]); // When categoryUrl changes, reset the filtered data
+
+
+
+
+
+
+  // get cart data
 
   useEffect(() => {
-    const getProducts = async () => {
-      setLoading(true);
-      const response = await fetch("https://fakestoreapi.com/products/");
-      if (componentMounted) {
-        setData(await response.clone().json());
-        setFilter(await response.json());
-        setLoading(false);
-      }
+    const getCartData = async () => {
+      try {
+        const response = await fetch('http://localhost:3333/api/cart', {
+          method: 'GET',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
+          },
+        });
 
-      return () => {
-        componentMounted = false;
-      };
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Cart data:', data.data.items);
+          dispatch(updateCart(data.data.items))
+          setCartData(data);  // Postavljanje podataka u state
+        } else {
+          console.error('Error fetching cart data:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error fetching cart data:', error);
+      }
+    };
+    getCartData();
+  }, [testCounter]);
+
+
+
+  useEffect(() => {
+    // Fetch the API URL from localStorage
+    const storedApiUrl = localStorage.getItem('api url');
+    
+    // If there is a stored URL, use it; otherwise, fallback to the default URL logic
+    const fetchData = async () => {
+      try {
+        let apiUrl = storedApiUrl || `http://localhost:3333/api/products?page=${pageNumber}`;
+        
+        // If categoryUrl and cateogoryTagsUrl are provided, update the API URL
+        if (categoryUrl && cateogoryTagsUrl) {
+          apiUrl = `http://localhost:3333/api/products?category_code=${categoryUrl}&tags=${cateogoryTagsUrl}&page=${pageNumber}`;
+        } else if (categoryUrl) {
+          apiUrl = `http://localhost:3333/api/products?category_code=${categoryUrl}&page=${pageNumber}`;
+        }
+  
+        console.log('Using API URL:', apiUrl); // Log to check the final URL being used
+  
+        const response = await fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
+          },
+        });
+  
+        const data = await response.json();
+        console.log('Fetched Data:', data);
+  
+        setData(data); // Set full data
+        setFilteredData(data.data.products || []); // Set products if available
+        setIsFetched(true);
+  
+        // Store the API URL in localStorage so it can be used later
+        localStorage.setItem('api url', apiUrl);        
+        console.log('api url: ', apiUrl)
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+  
+    fetchData();
+  }, [pageNumber, categoryUrl, cateogoryTagsUrl, resetStorageApiUrl]);  
+
+
+  // Prvo salji na server, pa na redux (cart put swager)
+  const addProduct = (product) => {
+    const sendToBackend = async (product) => {
+      console.log('Pavle product: ', product);
+      console.log('Pavle product id: ', product._id);
+      try {
+        const response = await fetch('http://localhost:3333/api/cart', {
+          method: 'PUT',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
+          },
+          body: JSON.stringify({
+            items: [
+              {
+                product_id: product._id,
+                quantity: 1
+              }
+            ]
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setTestCounter(prev => prev + 1);
+          // dispatch(setTestCounter(testCounter + 1));
+          console.log('Product added to cart in backend:', data);
+          toast.success("Added to cart");
+        } else {
+          console.error('Failed to add product to cart:', response);
+          toast.error("Failed to add product to cart.");
+        }
+      } catch (error) {
+        console.error('Error adding product to cart:', error);
+        toast.error("An error occurred while adding the product.");
+      }
     };
 
-    getProducts();
+    sendToBackend(product);
+
+    // dispatch(addCart(product));
+  };
+
+
+  const inputHandler = (e) => {
+    const filteredData = data.data.products.filter((item) => item.name.trim().toLowerCase().includes(e.target.value.toLowerCase()));
+    setFilteredData(filteredData);
+  };
+
+  // localstorage page number
+
+  useEffect(() => {
+    const savedPageNumber = localStorage.getItem('page number');
+    if (savedPageNumber) {
+      setPageNumber(Number(savedPageNumber));
+    }
   }, []);
 
-  const Loading = () => {
-    return (
-      <>
-        <div className="col-12 py-5 text-center">
-          <Skeleton height={40} width={560} />
-        </div>
-        <div className="col-md-4 col-sm-6 col-xs-8 col-12 mb-4">
-          <Skeleton height={592} />
-        </div>
-        <div className="col-md-4 col-sm-6 col-xs-8 col-12 mb-4">
-          <Skeleton height={592} />
-        </div>
-        <div className="col-md-4 col-sm-6 col-xs-8 col-12 mb-4">
-          <Skeleton height={592} />
-        </div>
-        <div className="col-md-4 col-sm-6 col-xs-8 col-12 mb-4">
-          <Skeleton height={592} />
-        </div>
-        <div className="col-md-4 col-sm-6 col-xs-8 col-12 mb-4">
-          <Skeleton height={592} />
-        </div>
-        <div className="col-md-4 col-sm-6 col-xs-8 col-12 mb-4">
-          <Skeleton height={592} />
-        </div>
-      </>
-    );
+  const handlePrevPage = () => {
+    setPageNumber((prev) => {
+      const newPageNumber = prev > 1 ? prev - 1 : prev;
+      localStorage.setItem('page number', newPageNumber); // Store the new page number in localStorage
+      return newPageNumber;
+    });
+    localStorage.removeItem('api url')
   };
 
-  const filterProduct = (cat) => {
-    const updatedList = data.filter((item) => item.category === cat);
-    setFilter(updatedList);
+  const handleNextPage = () => {
+    setPageNumber((prev) => {
+      const newPageNumber = isFetched ? prev + 1 : prev;
+      localStorage.setItem('page number', newPageNumber); // Store the new page number in localStorage
+      return newPageNumber;
+    });
+    localStorage.removeItem('api url')
   };
-
-  const ShowProducts = () => {
-    return (
-      <>
-        <div className="buttons text-center py-5">
-          <button
-            className="btn btn-outline-dark btn-sm m-2"
-            onClick={() => setFilter(data)}
-          >
-            All
-          </button>
-          <button
-            className="btn btn-outline-dark btn-sm m-2"
-            onClick={() => filterProduct("men's clothing")}
-          >
-            Men's Clothing
-          </button>
-          <button
-            className="btn btn-outline-dark btn-sm m-2"
-            onClick={() => filterProduct("women's clothing")}
-          >
-            Women's Clothing
-          </button>
-          <button
-            className="btn btn-outline-dark btn-sm m-2"
-            onClick={() => filterProduct("jewelery")}
-          >
-            Jewelery
-          </button>
-          <button
-            className="btn btn-outline-dark btn-sm m-2"
-            onClick={() => filterProduct("electronics")}
-          >
-            Electronics
-          </button>
-        </div>
-
-        {filter.map((product) => {
-          return (
-            <div
-              id={product.id}
-              key={product.id}
-              className="col-md-4 col-sm-6 col-xs-8 col-12 mb-4"
-            >
-              <div className="card text-center h-100" key={product.id}>
-                <img
-                  className="card-img-top p-3"
-                  src={product.image}
-                  alt="Card"
-                  height={300}
-                />
-                <div className="card-body">
-                  <h5 className="card-title">
-                    {product.title.substring(0, 12)}...
-                  </h5>
-                  <p className="card-text">
-                    {product.description.substring(0, 90)}...
-                  </p>
-                </div>
-                <ul className="list-group list-group-flush">
-                  <li className="list-group-item lead">$ {product.price}</li>
-                  {/* <li className="list-group-item">Dapibus ac facilisis in</li>
-                    <li className="list-group-item">Vestibulum at eros</li> */}
-                </ul>
-                <div className="card-body">
-                  <Link
-                    to={"/product/" + product.id}
-                    className="btn btn-dark m-1"
-                  >
-                    Buy Now
-                  </Link>
-                  <button
-                    className="btn btn-dark m-1"
-                    onClick={() => {
-                      toast.success("Added to cart");
-                      addProduct(product);
-                    }}
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </>
-    );
-  };
+  
+  
   return (
     <>
-      <div className="container my-3 py-3">
-        <div className="row">
-          <div className="col-12">
-            <h2 className="display-5 text-center">Latest Products</h2>
-            <hr />
-          </div>
-        </div>
-        <div className="row justify-content-center">
-          {loading ? <Loading /> : <ShowProducts />}
+
+      <div>
+        <Menu handleCategoryUrl={handleCategoryUrl} handleCategoryTagsUrl={handleCategoryTagsUrl} setCategoryTagsUrl={setCategoryTagsUrl} setResetStorageApiUrl={setResetStorageApiUrl} />
+
+        <div style={{ padding: '20px', textAlign: 'center' }}>
+          <input style={{ padding: '5px' }}
+            onChange={inputHandler}
+            type="text"
+            placeholder="Search by product title..."
+          />
         </div>
       </div>
+
+      <div className="grid-container">
+        {/* Pavle nema svaki proizvod cenu */}
+        {filteredData.map((item, index) => (
+
+          <div key={index} style={{ border: '1px solid #ccc', padding: '10px' }}>
+            <div style={{ height: '120px', margin: '30px' }}>
+              <img style={{ height: '100%' }} src={item.thumbnail_url ? item.thumbnail_url : imgUrl} alt={item.title} />
+            </div>
+            <h6>{item.name.substring(0, 20)}</h6>
+            <div style={{ display: 'flex', justifyContent: 'space-around' }}>
+              <span>Sifra: 123</span>
+              <p>price: {item.price}$</p>
+            </div>
+            <div className="card-body">
+              <Link
+                to={"/product/" + item._id}
+                className="btn btn-dark m-1"
+              >
+                Buy Now
+              </Link>
+              <button
+                className="btn btn-dark m-1"
+                onClick={() => {
+                  // toast.success("Added to cart");
+                  addProduct(item);
+                }}
+              >
+                Add to Cart
+              </button>
+            </div>
+          </div>
+
+        ))}
+      </div>
+
+      <div style={{ width: '20%', marginTop: '20px', margin: '0 auto' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%', marginTop: '20px', padding: '20px' }}>
+          <button onClick={handlePrevPage} className="btn btn-dark m-1">Prev</button>
+          <button onClick={handleNextPage} className="btn btn-dark m-1">Next</button>
+        </div>
+      </div>
+
     </>
   );
 };

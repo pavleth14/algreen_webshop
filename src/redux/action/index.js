@@ -13,3 +13,9 @@ export const delCart = (product) =>{
         payload:product
     }
 }
+
+export const updateCart = (cartItems) => ({
+    type: "UPDATE_CART",
+    payload: cartItems, 
+  });
+

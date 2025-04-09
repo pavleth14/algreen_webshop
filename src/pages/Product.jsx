@@ -2,12 +2,16 @@ import React, { useEffect, useState } from "react";
 import Skeleton from "react-loading-skeleton";
 import { Link, useParams } from "react-router-dom";
 import Marquee from "react-fast-marquee";
-import { useDispatch } from "react-redux";
-import { addCart } from "../redux/action";
+import { useDispatch, useSelector } from "react-redux";
+import { addCart, updateCart, setTestCounter } from "../redux/action";
+import toast from "react-hot-toast";
 
 import { Footer, Navbar } from "../components";
 
 const Product = () => {
+
+  const imgUrl = 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
+
   const { id } = useParams();
   const [product, setProduct] = useState([]);
   const [similarProducts, setSimilarProducts] = useState([]);
@@ -15,18 +19,97 @@ const Product = () => {
   const [loading2, setLoading2] = useState(false);
 
   const dispatch = useDispatch();
+  // const testCounter = useSelector((state) => state.cartItems.testCounter); 
+  const [testCounter, setTestCounter] = useState(0); 
+
+  // get cart data
+ 
+  useEffect(() => {
+    const getCartData = async () => {
+      try {
+        const response = await fetch('http://localhost:3333/api/cart', {
+          method: 'GET',     
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
+          },
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Cart data:', data.data.items);
+          dispatch(updateCart(data.data.items))          
+        } else {
+          console.error('Error fetching cart data:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error fetching cart data:', error);
+      }
+    };
+    getCartData();
+  }, [testCounter]);
+  
 
   const addProduct = (product) => {
-    dispatch(addCart(product));
+
+    // dispatch(addCart(product));    
+    
+    const sendToBackend = async (product) => {
+      console.log('Pavle product: ', product);
+      console.log('Pavle product id: ', product._id);   
+      try {
+        const response = await fetch('http://localhost:3333/api/cart', {
+          method: 'PUT',     
+          credentials: 'include',       
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca', 
+          },
+          body: JSON.stringify({
+            items: [
+              {
+                product_id: product._id,   
+                quantity: 1 
+              }
+            ]
+          }),
+        });
+  
+        if (response.ok) {
+          const data = await response.json();
+          // dispatch(setTestCounter(testCounter + 1));
+          setTestCounter(prev => prev + 1);
+          console.log('Product added to cart in backend:', data);
+          toast.success("Product added to cart successfully!");
+        } else {
+          console.error('Failed to add product to cart:', response);
+          toast.error("Failed to add product to cart.");
+        }
+      } catch (error) {
+        console.error('Error adding product to cart:', error);
+        toast.error("An error occurred while adding the product.");
+      }
+    };  
+    
+    sendToBackend(product); 
   };
 
   useEffect(() => {
+    console.log('Pavle id: ', id);
     const getProduct = async () => {
       setLoading(true);
       setLoading2(true);
-      const response = await fetch(`https://fakestoreapi.com/products/${id}`);
+      const response = await fetch(`http://localhost:3333/api/products/${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
+        },
+      });
       const data = await response.json();
-      setProduct(data);
+      setProduct(data.data);
+      console.log(data.data);
       setLoading(false);
       const response2 = await fetch(
         `https://fakestoreapi.com/products/category/${data.category}`
@@ -69,7 +152,7 @@ const Product = () => {
             <div className="col-md-6 col-sm-12 py-3">
               <img
                 className="img-fluid"
-                src={product.image}
+                src={product.image_url ? product.image_url : imgUrl}
                 alt={product.title}
                 width="400px"
                 height="400px"
@@ -77,7 +160,7 @@ const Product = () => {
             </div>
             <div className="col-md-6 col-md-6 py-5">
               <h4 className="text-uppercase text-muted">{product.category}</h4>
-              <h1 className="display-5">{product.title}</h1>
+              <p className="display-6">{product.name}</p>
               <p className="lead">
                 {product.rating && product.rating.rate}{" "}
                 <i className="fa fa-star"></i>
@@ -86,7 +169,10 @@ const Product = () => {
               <p className="lead">{product.description}</p>
               <button
                 className="btn btn-outline-dark"
-                onClick={() => addProduct(product)}
+                onClick={() => {
+                  toast.success("Added to card");                
+                  addProduct(product)}
+                }
               >
                 Add to Cart
               </button>

@@ -1,46 +1,216 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Footer, Navbar } from "../components";
 import { useSelector, useDispatch } from "react-redux";
-import { addCart, delCart } from "../redux/action";
+import { addCart, delCart, updateCart } from "../redux/action";
 import { Link } from "react-router-dom";
+import { debounce } from "lodash";
 
-const Cart = () => {
-  const state = useSelector((state) => state.handleCart);
+const Cart = () => {  
+  const cartData = useSelector((state) => state.handleCart);
+  console.log('Cart data: ', cartData);
   const dispatch = useDispatch();
 
-  const EmptyCart = () => {
-    return (
-      <div className="container">
-        <div className="row">
-          <div className="col-md-12 py-5 bg-light text-center">
-            <h4 className="p-3 display-5">Your Cart is Empty</h4>
-            <Link to="/" className="btn  btn-outline-dark mx-4">
-              <i className="fa fa-arrow-left"></i> Continue Shopping
-            </Link>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  const imgUrl = 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg';
 
-  const addItem = (product) => {
-    dispatch(addCart(product));
-  };
-  const removeItem = (product) => {
-    dispatch(delCart(product));
-  };
+  // Funkcija za dodavanje proizvoda u korpu
+  const addItem = debounce((product) => {
+    console.log(product.quantity + 1);
+    const sendToBackend = async (product) => {
+      try {
+        const response = await fetch('http://localhost:3333/api/cart', {
+          method: 'PUT',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
+          },
+          body: JSON.stringify({
+            items: [{ product_id: product.product._id, quantity: 1 }],
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          dispatch(updateCart(data.data.items));
+        } else {
+          console.error('Failed to add product to cart:', response);
+        }
+      } catch (error) {
+        console.error('Error adding product to cart:', error);
+      }
+    };
+
+    sendToBackend(product);
+  }, 200); 
+  
+  // Funkcija za smanjenje količine proizvoda
+  const reduceItem = debounce((product) => {
+    console.log(product.quantity - 1);
+    const sendToBackend = async (product) => {
+      try {
+        const response = await fetch('http://localhost:3333/api/cart', {
+          method: 'PUT',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
+          },
+          body: JSON.stringify({
+            items: [{ product_id: product.product._id, quantity: -1 }],
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          dispatch(updateCart(data.data.items));
+        } else {
+          console.error('Failed to reduce product in cart:', response);
+        }
+      } catch (error) {
+        console.error('Error reducing product in cart:', error);
+      }
+    };
+
+    sendToBackend(product);
+  }, 200); 
+
+  const handleDeleteItem = (product) => {
+    console.log('handleDeleteProduct id: ', product.product._id);
+
+    const sendToBackend = async (product) => {
+      try {
+        const response = await fetch(`http://localhost:3333/api/cart/${product.product._id}`, {
+          method: 'DELETE',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
+          },
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          dispatch(updateCart(data.data.items))
+        } else {
+          console.error('Failed to add product to cart:', response);
+        }
+      } catch (error) {
+        console.error('Error adding product to cart:', error);
+      }
+    };
+    sendToBackend(product);
+  }
+
+  // PAVLE IZMENJEN PODATAK INPUT
+
+  // Funkcija koja ažurira količinu kada korisnik menja vrednost
+  const handleNewInputQuantity = (e, productId) => {  
+
+    const newQuantity = e.target.value;    
+
+    const data = {
+      product_id: productId,
+      quantity: newQuantity,
+      set_quantity: false
+    };
+
+    console.log('dataaaaaa', data);
+    
+    
+    const sendToBackend = async () => {
+      try {
+        const response = await fetch('http://localhost:3333/api/cart', {
+          method: 'PUT',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
+          },
+          body: JSON.stringify({
+            items: [
+              {
+                product_id: productId,
+                quantity: parseInt(newQuantity),
+                set_quantity: true
+              }
+            ]
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();          
+          console.log('Product added to cart in backend:', data);
+          dispatch(updateCart(data.data.items));
+          // toast.success("Added to cart");
+          
+        } else {
+          console.error('Failed to add product to cart:', response);
+          // toast.error("Failed to add product to cart.");
+        }
+      } catch (error) {
+        console.error('Error adding product to cart:', error);
+        // toast.error("An error occurred while adding the product.");
+      }
+    };
+
+    sendToBackend();   
+    
+  };  
+
+  const debouncedHandleNewInputQuantity = debounce(handleNewInputQuantity, 800);    
+
+  // PAVLE IZMENJEN PODATAK INPUT
 
   const ShowCart = () => {
     let subtotal = 0;
     let shipping = 30.0;
     let totalItems = 0;
-    state.map((item) => {
-      return (subtotal += item.price * item.qty);
+
+    cartData.map((item) => {
+      if (item.product) { // Check if item.product is defined
+        subtotal += item.product.price * item.quantity;
+      }
     });
 
-    state.map((item) => {
-      return (totalItems += item.qty);
+    cartData.map((item) => {
+      if (item.product) { // Check if item.product is defined
+        totalItems += item.quantity;
+      }
     });
+
+    const handleDeleteCart = () => {
+
+      const isConfirmed = window.confirm('Da li zaista želite da obrišete sve iz kartice?');
+
+      if (isConfirmed) {
+        const sendToBackend = async () => {
+          try {
+            const response = await fetch(`http://localhost:3333/api/cart`, {
+              method: 'DELETE',
+              credentials: 'include',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
+              },
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              dispatch(updateCart(data.data.items));
+            } else {
+              console.error('Failed to remove items from cart:', response);
+            }
+          } catch (error) {
+            console.error('Error adding product to cart:', error);
+          }
+        };
+
+        sendToBackend();
+      } else {
+        console.log('Brisanje je otkazano.');
+      }
+    };
+
     return (
       <>
         <section className="h-100 gradient-custom">
@@ -52,72 +222,80 @@ const Cart = () => {
                     <h5 className="mb-0">Item List</h5>
                   </div>
                   <div className="card-body">
-                    {state.map((item) => {
+                    {cartData.map((item) => {
                       return (
-                        <div key={item.id}>
-                          <div className="row d-flex align-items-center">
-                            <div className="col-lg-3 col-md-12">
-                              <div
-                                className="bg-image rounded"
-                                data-mdb-ripple-color="light"
-                              >
-                                <img
-                                  src={item.image}
-                                  // className="w-100"
-                                  alt={item.title}
-                                  width={100}
-                                  height={75}
-                                />
-                              </div>
-                            </div>
-
-                            <div className="col-lg-5 col-md-6">
-                              <p>
-                                <strong>{item.title}</strong>
-                              </p>
-                              {/* <p>Color: blue</p>
-                              <p>Size: M</p> */}
-                            </div>
-
-                            <div className="col-lg-4 col-md-6">
-                              <div
-                                className="d-flex mb-4"
-                                style={{ maxWidth: "300px" }}
-                              >
-                                <button
-                                  className="btn px-3"
-                                  onClick={() => {
-                                    removeItem(item);
-                                  }}
-                                >
-                                  <i className="fas fa-minus"></i>
-                                </button>
-
-                                <p className="mx-5">{item.qty}</p>
-
-                                <button
-                                  className="btn px-3"
-                                  onClick={() => {
-                                    addItem(item);
-                                  }}
-                                >
-                                  <i className="fas fa-plus"></i>
-                                </button>
+                        <div key={item.product._id}>
+                          <div>
+                            <div className="row d-flex align-items-center">
+                              <div className="col-lg-3 col-md-12">
+                                <div className="bg-image rounded">
+                                  <div className="mb-2">{item.product.name}</div>
+                                  <img
+                                    src={item.product.thumbnail_url ? item.product.thumbnail_url : imgUrl}
+                                    alt={item.title}
+                                    width={100}
+                                    height={75}
+                                  />
+                                </div>
                               </div>
 
-                              <p className="text-start text-md-center">
-                                <strong>
-                                  <span className="text-muted">{item.qty}</span>{" "}
-                                  x ${item.price}
-                                </strong>
-                              </p>
+                              <div className="col-lg-5 col-md-6">
+                                <p>
+                                  <strong>{item.product.title}</strong>
+                                </p>
+                              </div>
+
+                              <div className="col-lg-4 col-md-6">
+                                <div
+                                  className="d-flex justify-content-center mb-4 "
+                                  style={{ maxWidth: "300px" }}
+                                >
+                                  <button
+                                    className="btn px-3"
+                                    onClick={() => {
+                                      reduceItem(item);
+                                    }}
+                                  >
+                                    <i className="fas fa-minus"></i>
+                                  </button>
+
+                                  <input style = {{ width: '50px', textAlign: 'center' }}                                    
+                                    type="text" 
+                                    onChange={(e) => debouncedHandleNewInputQuantity(e, item.product._id)} 
+                                    placeholder={item.quantity}
+                                  />
+
+                                  <button
+                                    className="btn px-3"
+                                    onClick={() => {
+                                      addItem(item);
+                                    }}
+                                  >
+                                    <i className="fas fa-plus"></i>
+                                  </button>
+                                </div>
+
+                                <p className="text-start text-md-center mb-4">
+                                  <strong>
+                                    <span className="text-muted">{item.quantity}</span>{" "}
+                                    x ${item.product.price}
+                                  </strong>
+                                </p>
+                                <div className="text-center ">
+                                  <button onClick={() => handleDeleteItem(item)}>delete</button>
+                                </div>
+                              </div>
                             </div>
+                            <hr className="my-4" />
                           </div>
-
-                          <hr className="my-4" />
                         </div>
                       );
                     })}
+                    
+                    <div style={{ display: 'flex', justifyContent: 'center', margin: '0 auto' }}>
+                      <button onClick={() => handleDeleteCart()}>Delete all</button>
+                    </div>
+                    
                   </div>
                 </div>
               </div>
@@ -161,13 +339,28 @@ const Cart = () => {
     );
   };
 
+  const EmptyCart = () => {
+    return (
+      <div className="container">
+        <div className="row">
+          <div className="col-md-12 py-5 bg-light text-center">
+            <h4 className="p-3 display-5">Your Cart is Empty</h4>
+            <Link to="/" className="btn  btn-outline-dark mx-4">
+              <i className="fa fa-arrow-left"></i> Continue Shopping
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <Navbar />
       <div className="container my-3 py-3">
         <h1 className="text-center">Cart</h1>
         <hr />
-        {state.length > 0 ? <ShowCart /> : <EmptyCart />}
+        {cartData.length > 0 ? <ShowCart /> : <EmptyCart />}
       </div>
       <Footer />
     </>
