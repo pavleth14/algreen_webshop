@@ -32,7 +32,7 @@ const Product = () => {
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
+            // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
           },
         });
   
@@ -64,7 +64,7 @@ const Product = () => {
           credentials: 'include',       
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca', 
+            // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca', 
           },
           body: JSON.stringify({
             items: [
@@ -104,7 +104,7 @@ const Product = () => {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
+          // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
         },
       });
       const data = await response.json();

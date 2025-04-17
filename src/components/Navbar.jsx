@@ -1,44 +1,31 @@
 import React, { useEffect, useState } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { NavLink } from 'react-router-dom';
+import { useSelector, useDispatch } from 'react-redux';
 import toast from "react-hot-toast";
+import { clearAuth, clearRole } from '../redux/reducer/authSlice';  // Importuj akciju za logout
 
 const Navbar = () => {
     const [totalQuantity, setTotalQuantity] = useState(0);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const state = useSelector(state => state.handleCart); // Pavle totalQuantity umesto state.length  
-    const location = useLocation();  // Get the current location/path
+    const [isLoggedIn, setIsLoggedIn] = useState(false);  // Stavimo stanje za login status
+    const accessToken = useSelector(state => state.auth?.accessToken);  // Koristi optional chaining
+    const state = useSelector(state => state.handleCart);  // Total quantity from cart state
+    const dispatch = useDispatch();  // Dispatch za logout
 
-    // Check if the user is logged in when the component mounts
+    // Provera statusa prijave sa localStorage-a
     useEffect(() => {
-        // Check if user is logged in by the presence of access token in localStorage
-        const accessToken = localStorage.getItem("accessToken");
-        if (accessToken) {
-            setIsLoggedIn(true);
-        } else {
-            setIsLoggedIn(false);
-        }
+        const loggedInStatus = localStorage.getItem('isLoggedIn') === 'true';  // Proveri da li je korisnik prijavljen
+        setIsLoggedIn(loggedInStatus);  // Postavi status
+    }, []);  // Ovaj useEffect se izvršava samo prilikom mountovanja komponente
 
+    // Provera i update količine proizvoda u korpi
+    useEffect(() => {
         const quantity = state.reduce((total, item) => total + item.quantity, 0);
         setTotalQuantity(quantity);
-    }, [state]);
-
-    // Custom click handler to prevent reloading on the same page
-
-    const handleClick = (e, to) => {
-        if (location.pathname === to) {
-            // Prevent the default action if we're already on the page
-            e.preventDefault();
-            localStorage.removeItem('api url');
-            localStorage.removeItem('currentCategory');
-            localStorage.removeItem('currentSubCategory');
-            window.location.reload();
-        }
-    };
+    }, [state]);  // Ovaj useEffect se izvršava kad god se promeni stanje korpe
 
     // Handle Logout
     const handleLogout = async () => {
-
+        console.log('Pavle handle logout access token: ', accessToken);
         const isConfirmed = window.confirm("Are you sure you want to logout?");
 
         if (isConfirmed) {
@@ -50,7 +37,7 @@ const Navbar = () => {
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        accessToken: localStorage.getItem('accessToken') // Send the token to invalidate
+                        accessToken: accessToken // Send the token to invalidate
                     })
                 });
 
@@ -58,14 +45,16 @@ const Navbar = () => {
                 console.log('Logout response:', data);
 
                 if (data.success) {
-                    // Clear localStorage to log the user out
-                    localStorage.removeItem("accessToken");
-                    localStorage.removeItem("refreshToken");
-                    localStorage.removeItem("userId");
+                    // Dispatch logout action to clear Redux store
+                    dispatch(clearAuth());  // Pozivamo akciju za logout
+                    dispatch(clearRole())
+                    localStorage.removeItem('role');
 
-                    // Update the UI after logout
-                    setIsLoggedIn(false);
+                    // Clean up localStorage
+                    // localStorage.setItem('isLoggedIn', 'false');  // Postavljamo isLoggedIn u false
+
                     toast.success('You are logged out');
+                    setIsLoggedIn(false);  // Osvežavamo lokalno stanje
                 } else {
                     console.log('Logout failed!');
                 }
@@ -73,8 +62,6 @@ const Navbar = () => {
                 console.log('Error logging out:', error);
             }
         }
-
-
     };
 
     return (
@@ -91,7 +78,6 @@ const Navbar = () => {
                             <NavLink
                                 className="nav-link"
                                 to="/"
-                                onClick={(e) => handleClick(e, "/")}
                             >
                                 Home
                             </NavLink>
@@ -100,7 +86,6 @@ const Navbar = () => {
                             <NavLink
                                 className="nav-link"
                                 to="/product"
-                                onClick={(e) => handleClick(e, "/product")}
                             >
                                 Products
                             </NavLink>
@@ -109,7 +94,6 @@ const Navbar = () => {
                             <NavLink
                                 className="nav-link"
                                 to="/about"
-                                onClick={(e) => handleClick(e, "/about")}
                             >
                                 About
                             </NavLink>
@@ -118,7 +102,6 @@ const Navbar = () => {
                             <NavLink
                                 className="nav-link"
                                 to="/contact"
-                                onClick={(e) => handleClick(e, "/contact")}
                             >
                                 Contact
                             </NavLink>
@@ -126,21 +109,19 @@ const Navbar = () => {
                     </ul>
                     <div className="buttons text-center">
                         {/* Show Login and Register buttons if user is not logged in */}
-                        {!isLoggedIn && (
+                        {!isLoggedIn ? (
                             <>
                                 <NavLink to="/login" className="btn btn-outline-dark m-2"><i className="fa fa-sign-in-alt mr-1"></i> Login</NavLink>
                                 <NavLink to="/register" className="btn btn-outline-dark m-2"><i className="fa fa-user-plus mr-1"></i> Register</NavLink>
                             </>
-                        )}
-
-                        <NavLink to="/cart" className="btn btn-outline-dark m-2"><i className="fa fa-cart-shopping mr-1"></i> Cart ({totalQuantity}) </NavLink>
-
-                        {/* Show Logout button if user is logged in */}
-                        {isLoggedIn && (
+                        ) : (
+                            // Show Logout button if user is logged in
                             <button onClick={handleLogout} className="btn btn-outline-dark m-2">
                                 <i className="fa fa-sign-out-alt mr-1"></i> Logout
                             </button>
                         )}
+
+                        <NavLink to="/cart" className="btn btn-outline-dark m-2"><i className="fa fa-cart-shopping mr-1"></i> Cart ({totalQuantity}) </NavLink>
                     </div>
                 </div>
             </div>

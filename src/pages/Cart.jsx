@@ -22,7 +22,7 @@ const Cart = () => {
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
+            // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
           },
           body: JSON.stringify({
             items: [{ product_id: product.product._id, quantity: 1 }],
@@ -53,7 +53,7 @@ const Cart = () => {
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
+            // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
           },
           body: JSON.stringify({
             items: [{ product_id: product.product._id, quantity: -1 }],
@@ -84,7 +84,7 @@ const Cart = () => {
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
+            // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
           },
         });
 
@@ -124,7 +124,7 @@ const Cart = () => {
           credentials: 'include',
           headers: {
             'Content-Type': 'application/json',
-            'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
+            // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
           },
           body: JSON.stringify({
             items: [
