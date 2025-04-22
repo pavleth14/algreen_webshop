@@ -14,6 +14,7 @@ const Admin = () => {
     const [image, setImage] = useState(null);
     const [pageNumber, setPageNumber] = useState(1);
     const [isFetched, setIsFetched] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -39,6 +40,38 @@ const Admin = () => {
     //         return;
     //     }
     // }, [roleStorage])
+
+
+
+    // Mapped category i tag
+    const categoriesMap = {
+        "Okov za proizvode od stakla": {
+            categoryCode: "glass",
+            subcategories: {
+                "Okov za staklo i tuš kabine": "glass1",
+                "Aluminijumski sistem za staklene ograde": "glass2",
+                "Držači stakla i spajderi": "glass3",
+            }
+        },
+        "Aluminijumski sistemi za ograde": {
+            categoryCode: "aluminum",
+            subcategories: {
+                "Aluminijumski okrugli sistem": "aluminum1",
+                "Aluminijumski kvadratni sistem": "aluminum2",
+                "Aluminijumski ovalni sistem": "aluminum3",
+                "Aluminijumski sistem za staklene ograde": "aluminum4",
+                "Aluminijumski sistem za dvorišne ograde": "aluminum5",
+            }
+        },
+        "Rukohvati, kvake i kontrola pristupa za ulazna vrata": {
+            categoryCode: "access",
+            subcategories: {
+                "Rukohvati": "access1",
+                "Kvake": "access2",
+                "Kontrola pristupa": "access3",
+            }
+        }
+    };
 
 
     useEffect(() => {
@@ -92,6 +125,8 @@ const Admin = () => {
                 if (userRole !== 'admin') {
                     toast.error('Access denied');
                     navigate('*');
+                } else {
+                    setIsLoading(false);
                 }
     
             } catch (error) {
@@ -105,37 +140,6 @@ const Admin = () => {
     }, [accessToken, dispatch, navigate]);
 
 
-
-    // Mapped category i tag
-    const categoriesMap = {
-        "Okov za proizvode od stakla": {
-            categoryCode: "glass",
-            subcategories: {
-                "Okov za staklo i tuš kabine": "glass1",
-                "Aluminijumski sistem za staklene ograde": "glass2",
-                "Držači stakla i spajderi": "glass3",
-            }
-        },
-        "Aluminijumski sistemi za ograde": {
-            categoryCode: "aluminum",
-            subcategories: {
-                "Aluminijumski okrugli sistem": "aluminum1",
-                "Aluminijumski kvadratni sistem": "aluminum2",
-                "Aluminijumski ovalni sistem": "aluminum3",
-                "Aluminijumski sistem za staklene ograde": "aluminum4",
-                "Aluminijumski sistem za dvorišne ograde": "aluminum5",
-            }
-        },
-        "Rukohvati, kvake i kontrola pristupa za ulazna vrata": {
-            categoryCode: "access",
-            subcategories: {
-                "Rukohvati": "access1",
-                "Kvake": "access2",
-                "Kontrola pristupa": "access3",
-            }
-        }
-    };
-
     // useEffect(() => {
     //     if ( role !== 'admin' ) { // role storage, role
     //       navigate('*');
@@ -145,7 +149,7 @@ const Admin = () => {
 
     useEffect(() => {
         const getProducts = async () => {
-            const response = await fetch(`http://localhost:3333/api/products?page=${pageNumber}`, {
+            const response = await fetch(`http://localhost:3333/api/products?page=${pageNumber}&limit=18`, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -189,7 +193,7 @@ const Admin = () => {
         const selectedImage = e.target.files[0];
         console.log('Selected image:', selectedImage);
 
-        setImage(selectedImage);
+        // setImage(selectedImage);
 
         const formData = new FormData();
         formData.append("image", selectedImage);
@@ -332,6 +336,8 @@ const Admin = () => {
 
     return (
         <div>
+            {isLoading && <h1>Loading</h1>}
+            {!isLoading && <div>        
             <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <h1>Admin</h1>
                 <button onClick={handleLogout}>Webcite</button>
@@ -342,34 +348,36 @@ const Admin = () => {
                     <div key={prod._id} className="product-item">
                         <span className="product-name">Naziv proizvoda: {prod.name}</span>
                         <span className="product-lager">Lager: {prod.lager}</span>
-                        <span className="product-category">ID kategorije: {prod.category_id}</span>
+                        <span className="product-category">ID kategorije: {prod.internal_id}</span>
 
                         {/* Inputs for category, tag and image change */}
                         <div>
-                            <label>Kategorija:</label>
-                            <input
+                            {/* <label>Kategorija:</label> */}
+                            <input className="custom-input"
                                 type="text"
                                 value={categoryInputs[prod._id] || ''}
                                 onChange={(e) => handleCategoryChange(e, prod._id)} // Set the category for the specific product
+                                placeholder="kategorija..."
                             />
                         </div>
                         <div>
-                            <label>Tag:</label>
-                            <input
+                            {/* <label>Tag:</label> */}
+                            <input className="custom-input"
                                 type="text"
                                 value={tagInputs[prod._id] || ''}
                                 onChange={(e) => handleTagChange(e, prod._id)} // Set the tag for the specific product
+                                placeholder="tag..."
                             />
                         </div>
                         <div>
-                            <label>Slika:</label>
+                            {/* <label>Slika:</label> */}
                             <input
                                 type="file"
                                 onChange={(e) => handleImageChange(e, prod._id)} // Pass product ID here
                             />
                         </div>
                         <div>
-                            <button onClick={() => handleSaveChanges(prod._id)}>Sacuvaj izmene</button>
+                            <button style={{height: '30px'}} onClick={() => handleSaveChanges(prod._id)}>Sacuvaj</button>
                         </div>
                     </div>
                 ))}
@@ -380,6 +388,7 @@ const Admin = () => {
                     <button onClick={handleNextPage} className="btn btn-dark m-1">Next</button>
                 </div>
             </div>
+        </div>}
         </div>
     );
 };

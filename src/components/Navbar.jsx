@@ -36,6 +36,7 @@ const Navbar = () => {
                     headers: {
                         'Content-Type': 'application/json',
                     },
+                    credentials: 'include',
                     body: JSON.stringify({
                         accessToken: accessToken // Send the token to invalidate
                     })

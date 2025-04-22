@@ -1,99 +1,103 @@
 .modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    opacity: 1;   /* Dodajemo */
-    transition: opacity 0.3s ease-in-out; /* Dodajemo animaciju za prelaz */
-  }
-  
-  .modal-content {
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    max-width: 500px;
-    width: 100%;
-  }
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
+  opacity: 1;   /* Dodajemo */
+  transition: opacity 0.3s ease-in-out; /* Dodajemo animaciju za prelaz */
+}
 
-  /* Flexbox styling */
+.modal-content {
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 500px;
+  width: 100%;
+}
+
+/* Flexbox styling */
 .product-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin: 10px 0;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-    width: 100%; /* Pavle 50% */    
-  }
-  
-  .product-item span {
-    font-size: 14px;
-    color: #333;
-  }
-  
-  .product-item .product-name {
-    font-weight: bold;
-    width: 30%;  /* Određujemo širinu svakog elementa */
-  }
-  
-  .product-item .product-lager,
-  .product-item .product-category {
-    width: 25%;
-  }
-  
-  .product-item .edit-button {
-    background-color: #007bff;
-    color: white;
-    padding: 5px 10px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-  }
-  
-  .product-item .edit-button:hover {
-    background-color: #0056b3;
-  }
-  
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 10px 0;
+  /* padding: 10px; */
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  width: 100%; /* Pavle 50% */    
+}
+
+.product-item span {
+  font-size: 14px;
+  color: #333;
+}
+
+.product-item .product-name {
+  font-weight: bold;
+  width: 70%;  /* Određujemo širinu svakog elementa */
+}
+
+.product-item .product-lager,
+.product-item .product-category {
+  width: 25%;
+}
+
+.custom-input::placeholder {
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.product-item .edit-button {
+  background-color: #007bff;
+  color: white;
+  padding: 5px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.product-item .edit-button:hover {
+  background-color: #0056b3;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr); /* 5 kolona na velikim ekranima */
+  gap: 20px;
+  padding: 20px;
+  text-align: center;
+}
+
+
+
+@media (max-width: 1224px) {
   .grid-container {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr); /* 5 kolona na velikim ekranima */
-    gap: 20px;
-    padding: 20px;
-    text-align: center;
+    grid-template-columns: repeat(3, 1fr); /* 3 kolone na srednjim ekranima */
   }
+}  
 
-  
-  
-  @media (max-width: 1224px) {
-    .grid-container {
-      grid-template-columns: repeat(3, 1fr); /* 3 kolone na srednjim ekranima */
-    }
-  }  
-  
-  @media (max-width: 768px) {
-    .grid-container {
-      grid-template-columns: repeat(2, 1fr); /* 2 kolona na manjim ekranima */
-    }
+@media (max-width: 768px) {
+  .grid-container {
+    grid-template-columns: repeat(2, 1fr); /* 2 kolona na manjim ekranima */
   }
+}
 
-  @media (max-width: 470px) {
-    .grid-container {
-      grid-template-columns: 1fr; /* 1 kolona na mobilnim ekranima  1fr samo umesto repeat(2, 1fr) */
-    }
+@media (max-width: 470px) {
+  .grid-container {
+    grid-template-columns: 1fr; /* 1 kolona na mobilnim ekranima  1fr samo umesto repeat(2, 1fr) */
   }
+}
 
-  input::placeholder {
-    color: black
-  }
+input::placeholder {
+  color: black
+}
 
-  input:focus::placeholder {
-    color: grey;
-  }
+input:focus::placeholder {
+  color: grey;
+}

@@ -37,6 +37,7 @@ const Login = () => {
             'Content-Type': 'application/json',
             // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
           },
+          credentials: 'include',
           body: JSON.stringify(dataToSend),
         });
 
