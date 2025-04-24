@@ -4,7 +4,7 @@ const getInitialCart = () => {
   return storedCart ? JSON.parse(storedCart) : [];
 };
 
-const handleCart = (state = getInitialCart(), action) => {
+const handleCart = (state = [], action) => {
   const product = action.payload;
   let updatedCart;
 
@@ -45,7 +45,7 @@ const handleCart = (state = getInitialCart(), action) => {
       // Replace the current state with the new cart items from the payload
       updatedCart = product; // `product` is the new cart data passed in the action
       // Update localStorage with the new cart
-      localStorage.setItem("cart", JSON.stringify(updatedCart));
+      // localStorage.setItem("cart", JSON.stringify(updatedCart));
       return updatedCart;
 
     default:

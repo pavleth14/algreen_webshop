@@ -1,6 +1,49 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Footer, Navbar } from "../components";
-const AboutPage = () => {
+import useMe from '../hooks/useMe';
+import { useDispatch, useSelector } from 'react-redux';
+import { updateCart } from '../redux/action';
+const AboutPage = () => {  
+
+  useMe();
+
+  const accessToken = useSelector(state => state.auth?.accessToken);
+  console.log(accessToken); 
+
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const getCartData = async () => {
+      try {
+        const headers = {
+          'Content-Type': 'application/json',
+        };
+
+        if (accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+
+        const response = await fetch('http://localhost:3333/api/cart', {
+          method: 'GET',
+          credentials: 'include',
+          headers: headers,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Cart data:', data.data.items);
+          dispatch(updateCart(data.data.items));          
+        } else {
+          console.error('Error fetching cart data:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error fetching cart data:', error);
+      }
+    };
+
+    getCartData();
+  }, []);
+
   return (
     <>
       <Navbar />

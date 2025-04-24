@@ -3,6 +3,7 @@ import { NavLink } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
 import toast from "react-hot-toast";
 import { clearAuth, clearRole } from '../redux/reducer/authSlice';  // Importuj akciju za logout
+import { useNavigate } from "react-router-dom"; 
 
 const Navbar = () => {
     const [totalQuantity, setTotalQuantity] = useState(0);
@@ -10,6 +11,7 @@ const Navbar = () => {
     const accessToken = useSelector(state => state.auth?.accessToken);  // Koristi optional chaining
     const state = useSelector(state => state.handleCart);  // Total quantity from cart state
     const dispatch = useDispatch();  // Dispatch za logout
+    const navigate = useNavigate();
 
     // Provera statusa prijave sa localStorage-a
     useEffect(() => {
@@ -56,6 +58,8 @@ const Navbar = () => {
 
                     toast.success('You are logged out');
                     setIsLoggedIn(false);  // Osvežavamo lokalno stanje
+                    navigate('/product')
+
                 } else {
                     console.log('Logout failed!');
                 }

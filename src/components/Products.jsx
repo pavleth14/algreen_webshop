@@ -4,8 +4,18 @@ import { useDispatch, useSelector } from "react-redux";
 import { addCart, updateCart, setTestCounter } from "../redux/action";
 import toast from "react-hot-toast";
 import Menu from "./Menu";
+import useMe from '../hooks/useMe'
 
 const Products = () => {
+
+  // const {accessToken} = useMe();
+  // console.log(accessToken);
+  
+  useMe();
+  
+  const accessToken = useSelector(state => state.auth?.accessToken);
+  console.log(accessToken); 
+
 
   const imgUrl = 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg';
 
@@ -47,27 +57,30 @@ const Products = () => {
 
 
 
-
-
-
   // get cart data
 
   useEffect(() => {
     const getCartData = async () => {
       try {
+        const headers = {
+          'Content-Type': 'application/json',
+        };
+
+        if (accessToken) {
+          console.log('Pavle: ', 1111111111111111);
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+
         const response = await fetch('http://localhost:3333/api/cart', {
           method: 'GET',
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
-          },
+          headers: headers,
         });
 
         if (response.ok) {
           const data = await response.json();
           console.log('Cart data:', data.data.items);
-          dispatch(updateCart(data.data.items))
+          dispatch(updateCart(data.data.items));
           setCartData(data);  // Postavljanje podataka u state
         } else {
           console.error('Error fetching cart data:', response.statusText);
@@ -76,54 +89,62 @@ const Products = () => {
         console.error('Error fetching cart data:', error);
       }
     };
+
     getCartData();
-  }, [testCounter]);
+  }, [testCounter, accessToken]);
 
 
 
   useEffect(() => {
     // Fetch the API URL from localStorage
     const storedApiUrl = localStorage.getItem('api url');
-    
+
+    console.log('PAGE NUMBER: ', pageNumber);
+
     // If there is a stored URL, use it; otherwise, fallback to the default URL logic
     const fetchData = async () => {
       try {
         let apiUrl = storedApiUrl || `http://localhost:3333/api/products?page=${pageNumber}`;
-        
+
         // If categoryUrl and cateogoryTagsUrl are provided, update the API URL
         if (categoryUrl && cateogoryTagsUrl) {
           apiUrl = `http://localhost:3333/api/products?category_code=${categoryUrl}&tags=${cateogoryTagsUrl}&page=${pageNumber}`;
         } else if (categoryUrl) {
           apiUrl = `http://localhost:3333/api/products?category_code=${categoryUrl}&page=${pageNumber}`;
         }
-  
+
         console.log('Using API URL:', apiUrl); // Log to check the final URL being used
-  
+
+        const headers = {
+          'Content-Type': 'application/json',
+        };
+
+        if (accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+
         const response = await fetch(apiUrl, {
           method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
-          },
+          headers: headers
         });
-  
+
         const data = await response.json();
         console.log('Fetched Data:', data);
-  
+
         setData(data); // Set full data
         setFilteredData(data.data.products || []); // Set products if available
         setIsFetched(true);
-  
+
         // Store the API URL in localStorage so it can be used later
-        localStorage.setItem('api url', apiUrl);        
+        localStorage.setItem('api url', apiUrl);
         console.log('api url: ', apiUrl)
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
-  
+
     fetchData();
-  }, [pageNumber, categoryUrl, cateogoryTagsUrl, resetStorageApiUrl]);  
+  }, [pageNumber, categoryUrl, cateogoryTagsUrl, resetStorageApiUrl, accessToken]);
 
 
   // Prvo salji na server, pa na redux (cart put swager)
@@ -131,14 +152,20 @@ const Products = () => {
     const sendToBackend = async (product) => {
       console.log('Pavle product: ', product);
       console.log('Pavle product id: ', product._id);
+      console.log('Pavle ACCESS TOKEN', accessToken);
       try {
+        const headers = {
+          'Content-Type': 'application/json',
+        };
+
+        if (accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+
         const response = await fetch('http://localhost:3333/api/cart', {
           method: 'PUT',
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
-          },
+          headers: headers,
           body: JSON.stringify({
             items: [
               {
@@ -202,8 +229,8 @@ const Products = () => {
     });
     localStorage.removeItem('api url')
   };
-  
-  
+
+
   return (
     <>
 

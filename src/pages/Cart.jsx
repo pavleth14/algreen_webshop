@@ -4,11 +4,49 @@ import { useSelector, useDispatch } from "react-redux";
 import { addCart, delCart, updateCart } from "../redux/action";
 import { Link } from "react-router-dom";
 import { debounce } from "lodash";
+import useMe from "../hooks/useMe";
 
-const Cart = () => {  
+const Cart = () => {
+  const { accessToken } = useMe();
+  console.log(accessToken);
+  const [testCounter, setTestCounter] = useState(0);
+
   const cartData = useSelector((state) => state.handleCart);
   console.log('Cart data: ', cartData);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    const getCartData = async () => {
+      try {
+        const headers = {
+          'Content-Type': 'application/json',
+        };
+
+        if (accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+
+        const response = await fetch('http://localhost:3333/api/cart', {
+          method: 'GET',
+          credentials: 'include',
+          headers: headers,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log('Cart data:', data.data.items);
+          dispatch(updateCart(data.data.items));
+        } else {
+          console.error('Error fetching cart data:', response.statusText);
+        }
+      } catch (error) {
+        console.error('Error fetching cart data:', error);
+      }
+    };
+
+    getCartData();
+  }, [testCounter]);
+
 
   const imgUrl = 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg';
 
@@ -16,14 +54,19 @@ const Cart = () => {
   const addItem = debounce((product) => {
     console.log(product.quantity + 1);
     const sendToBackend = async (product) => {
-      try {
+      try {        
+        const headers = {
+          'Content-Type': 'application/json',
+        };
+
+        if (accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
+
         const response = await fetch('http://localhost:3333/api/cart', {
           method: 'PUT',
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
-          },
+          headers: headers,
           body: JSON.stringify({
             items: [{ product_id: product.product._id, quantity: 1 }],
           }),
@@ -32,6 +75,7 @@ const Cart = () => {
         if (response.ok) {
           const data = await response.json();
           dispatch(updateCart(data.data.items));
+          setTestCounter(prev => prev + 1);
         } else {
           console.error('Failed to add product to cart:', response);
         }
@@ -41,20 +85,24 @@ const Cart = () => {
     };
 
     sendToBackend(product);
-  }, 200); 
-  
+  }, 200);
+
   // Funkcija za smanjenje količine proizvoda
   const reduceItem = debounce((product) => {
     console.log(product.quantity - 1);
     const sendToBackend = async (product) => {
       try {
+        const headers = {
+          'Content-Type': 'application/json',
+        };
+
+        if (accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
         const response = await fetch('http://localhost:3333/api/cart', {
           method: 'PUT',
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
-          },
+          headers: headers,
           body: JSON.stringify({
             items: [{ product_id: product.product._id, quantity: -1 }],
           }),
@@ -63,6 +111,7 @@ const Cart = () => {
         if (response.ok) {
           const data = await response.json();
           dispatch(updateCart(data.data.items));
+          setTestCounter(prev => prev + 1);
         } else {
           console.error('Failed to reduce product in cart:', response);
         }
@@ -72,25 +121,30 @@ const Cart = () => {
     };
 
     sendToBackend(product);
-  }, 200); 
+  }, 200);
 
   const handleDeleteItem = (product) => {
     console.log('handleDeleteProduct id: ', product.product._id);
 
     const sendToBackend = async (product) => {
       try {
+        const headers = {
+          'Content-Type': 'application/json',
+        };
+
+        if (accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
         const response = await fetch(`http://localhost:3333/api/cart/${product.product._id}`, {
           method: 'DELETE',
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
-          },
+          headers: headers,
         });
 
         if (response.ok) {
           const data = await response.json();
           dispatch(updateCart(data.data.items))
+          setTestCounter(prev => prev + 1);
         } else {
           console.error('Failed to add product to cart:', response);
         }
@@ -104,9 +158,9 @@ const Cart = () => {
   // PAVLE IZMENJEN PODATAK INPUT
 
   // Funkcija koja ažurira količinu kada korisnik menja vrednost
-  const handleNewInputQuantity = (e, productId) => {  
+  const handleNewInputQuantity = (e, productId) => {
 
-    const newQuantity = e.target.value;    
+    const newQuantity = e.target.value;
 
     const data = {
       product_id: productId,
@@ -115,17 +169,21 @@ const Cart = () => {
     };
 
     console.log('dataaaaaa', data);
-    
-    
+
+
     const sendToBackend = async () => {
       try {
+        const headers = {
+          'Content-Type': 'application/json',
+        };
+
+        if (accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
         const response = await fetch('http://localhost:3333/api/cart', {
           method: 'PUT',
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
-          },
+          headers: headers,
           body: JSON.stringify({
             items: [
               {
@@ -138,11 +196,12 @@ const Cart = () => {
         });
 
         if (response.ok) {
-          const data = await response.json();          
+          const data = await response.json();
           console.log('Product added to cart in backend:', data);
           dispatch(updateCart(data.data.items));
+          setTestCounter(prev => prev + 1);
           // toast.success("Added to cart");
-          
+
         } else {
           console.error('Failed to add product to cart:', response);
           // toast.error("Failed to add product to cart.");
@@ -153,11 +212,11 @@ const Cart = () => {
       }
     };
 
-    sendToBackend();   
-    
-  };  
+    sendToBackend();
 
-  const debouncedHandleNewInputQuantity = debounce(handleNewInputQuantity, 800);    
+  };
+
+  const debouncedHandleNewInputQuantity = debounce(handleNewInputQuantity, 800);
 
   // PAVLE IZMENJEN PODATAK INPUT
 
@@ -185,18 +244,23 @@ const Cart = () => {
       if (isConfirmed) {
         const sendToBackend = async () => {
           try {
+            const headers = {
+              'Content-Type': 'application/json',
+            };
+    
+            if (accessToken) {
+              headers['Authorization'] = `Bearer ${accessToken}`;
+            }
             const response = await fetch(`http://localhost:3333/api/cart`, {
               method: 'DELETE',
               credentials: 'include',
-              headers: {
-                'Content-Type': 'application/json',
-                'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
-              },
+              headers: headers
             });
 
             if (response.ok) {
               const data = await response.json();
               dispatch(updateCart(data.data.items));
+              setTestCounter(prev => prev + 1);
             } else {
               console.error('Failed to remove items from cart:', response);
             }
@@ -259,9 +323,9 @@ const Cart = () => {
                                     <i className="fas fa-minus"></i>
                                   </button>
 
-                                  <input style = {{ width: '50px', textAlign: 'center' }}                                    
-                                    type="text" 
-                                    onChange={(e) => debouncedHandleNewInputQuantity(e, item.product._id)} 
+                                  <input style={{ width: '50px', textAlign: 'center' }}
+                                    type="text"
+                                    onChange={(e) => debouncedHandleNewInputQuantity(e, item.product._id)}
                                     placeholder={item.quantity}
                                   />
 
@@ -291,11 +355,11 @@ const Cart = () => {
                         </div>
                       );
                     })}
-                    
+
                     <div style={{ display: 'flex', justifyContent: 'center', margin: '0 auto' }}>
                       <button onClick={() => handleDeleteCart()}>Delete all</button>
                     </div>
-                    
+
                   </div>
                 </div>
               </div>

@@ -42,6 +42,6 @@ root.render(
         <App />  {/* Pozivamo App koji sadrži sve rute */}
       </Provider>
     </ScrollToTop>
-    <Toaster />
+    <Toaster position="top-right" />
   </BrowserRouter>
 );
