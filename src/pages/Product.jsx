@@ -81,7 +81,7 @@ const Product = () => {
           // dispatch(setTestCounter(testCounter + 1));
           setTestCounter(prev => prev + 1);
           console.log('Product added to cart in backend:', data);
-          toast.success("Product added to cart successfully!");
+          // toast.success("Product added to cart successfully!");
         } else {
           console.error('Failed to add product to cart:', response);
           toast.error("Failed to add product to cart.");

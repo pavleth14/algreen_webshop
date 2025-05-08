@@ -256,8 +256,8 @@ const Products = () => {
             </div>
             <h6>{item.name.substring(0, 20)}</h6>
             <div style={{ display: 'flex', justifyContent: 'space-around' }}>
-              <span>Sifra: 123</span>
-              <p>price: {item.price}$</p>
+              <span>Sifra: {item.internal_id}</span>
+              <p>Cena: {item.price}$</p>
             </div>
             <div className="card-body">
               <Link
