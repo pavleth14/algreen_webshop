@@ -302,81 +302,83 @@ const Cart = () => {
                       <h5 className="mb-0">Item List</h5>
                     </div>
                     <div className="card-body">
-                      {cartData.map((item) => {
-                        return (
-                          <div key={item.product._id}>
-                            <div>
-                              <div className="row d-flex align-items-center">
-                                <div className="col-lg-3 col-md-12">
-                                  <div className="bg-image rounded">
-                                    <div className="mb-2">{item.product.name}</div>
-                                    <img
-                                      src={item.product.thumbnail_url ? item.product.thumbnail_url : imgUrl}
-                                      alt={item.title}
-                                      width={100}
-                                      height={75}
-                                    />
-                                  </div>
-                                </div>
+  {cartData.map((item) => (
+    <div key={item.product._id} className="mb-4">
+      <div className="row align-items-center">
 
-                                <div className="col-lg-5 col-md-6">
-                                  <p>
-                                    <strong>{item.product.title}</strong>
-                                  </p>
-                                </div>
+        {/* Slika + ime */}
+        <div className="col-12 col-md-3 text-center mb-3 mb-md-0">
+          <div className="bg-light rounded p-2">
+            <div className="mb-2 fw-bold">{item.product.name}</div>
+            <img
+              src={item.product.thumbnail_url ? item.product.thumbnail_url : imgUrl}
+              alt={item.product.title}
+              style={{ width: '100px', height: '75px', objectFit: 'cover' }}
+              className="img-fluid"
+            />
+          </div>
+        </div>
 
-                                <div className="col-lg-4 col-md-6">
-                                  <div
-                                    className="d-flex justify-content-center mb-4 "
-                                    style={{ maxWidth: "300px" }}
-                                  >
-                                    <button
-                                      className="btn px-3"
-                                      onClick={() => {
-                                        reduceItem(item);
-                                      }}
-                                    >
-                                      <i className="fas fa-minus"></i>
-                                    </button>
+        {/* Naslov proizvoda */}
+        <div className="col-12 col-md-5 text-center text-md-start mb-3 mb-md-0">
+          <p className="mb-2">
+            <strong>{item.product.title}</strong>
+          </p>
+        </div>
 
-                                    <input style={{ width: '50px', textAlign: 'center' }}
-                                      type="text"
-                                      onChange={(e) => debouncedHandleNewInputQuantity(e, item.product._id)}
-                                      placeholder={item.quantity}
-                                    />
+        {/* Kontrole količine i dugmad */}
+        <div className="col-12 col-md-4 d-flex flex-column align-items-center">
+          <div className="d-flex justify-content-center mb-2" style={{ maxWidth: '300px' }}>
+            <button
+              className="btn btn-outline-secondary px-2"
+              onClick={() => reduceItem(item)}
+            >
+              <i className="fas fa-minus"></i>
+            </button>
 
-                                    <button
-                                      className="btn px-3"
-                                      onClick={() => {
-                                        addItem(item);
-                                      }}
-                                    >
-                                      <i className="fas fa-plus"></i>
-                                    </button>
-                                  </div>
+            <input
+              type="text"
+              className="form-control mx-2 text-center"
+              style={{ width: '60px' }}
+              placeholder={item.quantity}
+              onChange={(e) => debouncedHandleNewInputQuantity(e, item.product._id)}
+            />
 
-                                  <p className="text-start text-md-center mb-4">
-                                    <strong>
-                                      <span className="text-muted">{item.quantity}</span>{" "}
-                                      x ${item.product.price}
-                                    </strong>
-                                  </p>
-                                  <div className="text-center ">
-                                    <button onClick={() => handleDeleteItem(item)}>delete</button>
-                                  </div>
-                                </div>
-                              </div>
-                              <hr className="my-4" />
-                            </div>
-                          </div>
-                        );
-                      })}
+            <button
+              className="btn btn-outline-secondary px-2"
+              onClick={() => addItem(item)}
+            >
+              <i className="fas fa-plus"></i>
+            </button>
+          </div>
 
-                      <div style={{ display: 'flex', justifyContent: 'center', margin: '0 auto' }}>
-                        <button onClick={() => handleDeleteCart()}>Delete all</button>
-                      </div>
+          <p className="text-center mb-2">
+            <strong>
+              <span className="text-muted">{item.quantity}</span> x ${item.product.price}
+            </strong>
+          </p>
 
-                    </div>
+          <button
+            className="btn btn-sm btn-danger"
+            onClick={() => handleDeleteItem(item)}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+      <hr />
+    </div>
+  ))}
+
+  {cartData.length > 0 && (
+    <div className="text-center mt-4">
+      <button className="btn btn-outline-danger" onClick={() => handleDeleteCart()}>
+        Delete all
+      </button>
+    </div>
+  )}
+</div>
+
                   </div>
                 </div>
                 <div className="col-md-4">

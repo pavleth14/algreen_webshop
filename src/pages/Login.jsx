@@ -70,6 +70,7 @@ const Login = () => {
         }
       } catch (error) {
         console.log('Error fetching data: ', error);
+        toast.error('Invalid credentials');
       }
     };
 
@@ -112,19 +113,23 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
-              <div className="my-3">
-                <p>New Here? <Link to="/register" className="text-decoration-underline text-info">Register</Link> </p>
-              </div>
               <div className="text-center">
                 <button onClick={handleLogin} className="my-2 mx-auto btn btn-dark" type="submit">
                   Login
                 </button>
               </div>
+              <div className="my-3">
+                <p>New Here? <Link to="/register" className="text-decoration-underline text-info">Register</Link> </p>
+              </div>
+              <div className="my-3">
+                <p>Forget password? <Link to="/forget-password" className="text-decoration-underline text-info">Forget password?</Link> </p>
+              </div>
+              
             </form>
           </div>
         </div>
       </div>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 };

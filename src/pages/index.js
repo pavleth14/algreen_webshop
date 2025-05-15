@@ -8,4 +8,6 @@ export { default as Login } from './Login';
 export { default as Register } from './Register';
 export { default as Admin } from './Admin';
 export { default as Checkout } from './Checkout';
+export { default as ForgetPassword } from './ForgetPassword';
+export { default as ResetPassword } from './ResetPassword';
 export { default as PageNotFound } from './PageNotFound';

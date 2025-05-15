@@ -12,7 +12,7 @@ import ScrollToTop from "./components/ScrollToTop";
 // Importuj custom hook
 
 // Stranice
-import {Admin, Home, Product, Products, AboutPage, ContactPage, Cart, Login, Register, Checkout, PageNotFound } from "./pages";
+import {Admin, Home, Product, Products, AboutPage, ContactPage, Cart, Login, Register, Checkout, ForgetPassword, ResetPassword, PageNotFound } from "./pages";
 
 const App = () => {  
 
@@ -28,6 +28,8 @@ const App = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/checkout" element={<Checkout />} />
+      <Route path="/forget-password" element={<ForgetPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="*" element={<PageNotFound />} />
     </Routes>
   );
