@@ -1,52 +1,21 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Footer, Navbar } from "../components";
 import useMe from '../hooks/useMe';
-import { useDispatch, useSelector } from 'react-redux';
-import { updateCart } from '../redux/action';
+import { useSelector } from 'react-redux';
 const AboutPage = () => {  
 
   useMe();
 
-  const accessToken = useSelector(state => state.auth?.accessToken);
-  console.log(accessToken); 
-
-  const dispatch = useDispatch();
+  const accessToken = useSelector(state => state.auth?.accessToken);  
+  const [isLoaded, setIsLoaded] = useState(false);  
 
   useEffect(() => {
-    const getCartData = async () => {
-      try {
-        const headers = {
-          'Content-Type': 'application/json',
-        };
-
-        if (accessToken) {
-          headers['Authorization'] = `Bearer ${accessToken}`;
-        }
-
-        const response = await fetch('http://localhost:3333/api/cart', {
-          method: 'GET',
-          credentials: 'include',
-          headers: headers,
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          console.log('Cart data:', data.data.items);
-          dispatch(updateCart(data.data.items));          
-        } else {
-          console.error('Error fetching cart data:', response.statusText);
-        }
-      } catch (error) {
-        console.error('Error fetching cart data:', error);
-      }
-    };
-
-    getCartData();
-  }, []);
+    setIsLoaded(true);
+  }, [])
 
   return (
     <>
-      <Navbar />
+      { isLoaded && <Navbar />}
       <div className="container my-3 py-3">
         <h1 className="text-center">About Us</h1>
         <hr />

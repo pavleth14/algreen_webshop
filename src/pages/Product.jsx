@@ -7,8 +7,11 @@ import { addCart, updateCart, setTestCounter } from "../redux/action";
 import toast from "react-hot-toast";
 
 import { Footer, Navbar } from "../components";
+import useMe from "../hooks/useMe";
 
 const Product = () => {
+
+  useMe();
 
   const imgUrl = 'https://upload.wikimedia.org/wikipedia/commons/1/14/No_Image_Available.jpg'
 
@@ -17,23 +20,70 @@ const Product = () => {
   const [similarProducts, setSimilarProducts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [loading2, setLoading2] = useState(false);
+  const accessToken = useSelector(state => state.auth?.accessToken);
 
   const dispatch = useDispatch();
   // const testCounter = useSelector((state) => state.cartItems.testCounter); 
   const [testCounter, setTestCounter] = useState(0); 
+
+
+  // useEffect(() => {
+
+  //   const getCartData = async () => {
+
+  //     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
+
+  //     if (isLoggedIn && !accessToken) return;
+
+  //     try {
+  //       const headers = {
+  //         'Content-Type': 'application/json',
+  //       };
+
+  //       if (isLoggedIn && accessToken) {
+  //         console.log('User is logged in with token:', accessToken);
+  //         headers['Authorization'] = `Bearer ${accessToken}`;
+  //       }
+
+  //       const response = await fetch('http://localhost:3333/api/cart', {
+  //         method: 'GET',
+  //         credentials: 'include',
+  //         headers,
+  //       });
+
+  //       if (response.ok) {
+  //         const { data } = await response.json();
+  //         console.log('Cart data:', data.items);
+  //         dispatch(updateCart(data.items));
+  //         // setIsLoading(false);
+  //       } else {
+  //         console.error('Error fetching cart data:', response.statusText);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching cart data:', error);
+  //     }
+  //   };
+
+  //   getCartData();
+
+  // }, [testCounter, accessToken]);
 
   // get cart data
  
   useEffect(() => {
     const getCartData = async () => {
       try {
+        const headers = {
+          'Content-Type': 'application/json',
+        };
+
+        if (accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
         const response = await fetch('http://localhost:3333/api/cart', {
           method: 'GET',     
           credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-            // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
-          },
+          headers: headers,
         });
   
         if (response.ok) {
@@ -59,13 +109,17 @@ const Product = () => {
       console.log('Pavle product: ', product);
       console.log('Pavle product id: ', product._id);   
       try {
+        const headers = {
+          'Content-Type': 'application/json',
+        };
+
+        if (accessToken) {
+          headers['Authorization'] = `Bearer ${accessToken}`;
+        }
         const response = await fetch('http://localhost:3333/api/cart', {
           method: 'PUT',     
           credentials: 'include',       
-          headers: {
-            'Content-Type': 'application/json',
-            // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca', 
-          },
+          headers: headers,
           body: JSON.stringify({
             items: [
               {
@@ -100,12 +154,16 @@ const Product = () => {
     const getProduct = async () => {
       setLoading(true);
       setLoading2(true);
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
       const response = await fetch(`http://localhost:3333/api/products/${id}`, {
         method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          // 'x-api-key': 'bc8lygUI0i1nnES5eM6hxBFZgsICG8ca',
-        },
+        headers: headers,
       });
       const data = await response.json();
       setProduct(data.data);

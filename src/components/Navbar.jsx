@@ -4,14 +4,49 @@ import { useSelector, useDispatch } from 'react-redux';
 import toast from "react-hot-toast";
 import { clearAuth, clearRole } from '../redux/reducer/authSlice';  // Importuj akciju za logout
 import { useNavigate } from "react-router-dom"; 
+import { updateCart } from "../redux/action";
 
 const Navbar = () => {
     const [totalQuantity, setTotalQuantity] = useState(0);
     const [isLoggedIn, setIsLoggedIn] = useState(false);  // Stavimo stanje za login status
     const accessToken = useSelector(state => state.auth?.accessToken);  // Koristi optional chaining
     const state = useSelector(state => state.handleCart);  // Total quantity from cart state
+    
     const dispatch = useDispatch();  // Dispatch za logout
-    const navigate = useNavigate();
+    const navigate = useNavigate();    
+
+    useEffect(() => {
+        const getCartData = async () => {
+          try {
+            const headers = {
+              'Content-Type': 'application/json',
+            };
+    
+            if (accessToken) {
+              console.log('Pavle: ', 1111111111111111);
+              headers['Authorization'] = `Bearer ${accessToken}`;
+            }
+    
+            const response = await fetch('http://localhost:3333/api/cart', {
+              method: 'GET',
+              credentials: 'include',
+              headers: headers,
+            });
+    
+            if (response.ok) {
+              const data = await response.json();
+              console.log('Cart data:', data.data.items);
+              dispatch(updateCart(data.data.items));              
+            } else {
+              console.error('Error fetching cart data:', response.statusText);
+            }
+          } catch (error) {
+            console.error('Error fetching cart data:', error);
+          }
+        };
+    
+        getCartData();
+      }, [accessToken]);
 
     // Provera statusa prijave sa localStorage-a
     useEffect(() => {

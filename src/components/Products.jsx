@@ -81,6 +81,9 @@ const Products = () => {
           const data = await response.json();
           console.log('Cart data:', data.data.items);
           dispatch(updateCart(data.data.items));
+          dispatch(updateCart(data.data.items));
+          setCartData(data);  // Postavljanje podataka u state
+          dispatch(updateCart(data.data.items));          
           setCartData(data);  // Postavljanje podataka u state
         } else {
           console.error('Error fetching cart data:', response.statusText);
