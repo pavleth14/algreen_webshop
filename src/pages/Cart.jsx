@@ -309,6 +309,7 @@ const Cart = () => {
         {/* Slika + ime */}
         <div className="col-12 col-md-3 text-center mb-3 mb-md-0">
           <div className="bg-light rounded p-2">
+            {/* Ovde nemam item.product.name kad sam loginovan Pavle */}
             <div className="mb-2 fw-bold">{item.product.name}</div>
             <img
               src={item.product.thumbnail_url ? item.product.thumbnail_url : imgUrl}

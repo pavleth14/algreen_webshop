@@ -21,7 +21,6 @@ const Products = () => {
 
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
-  const [cartData, setCartData] = useState([]);
   const [pageNumber, setPageNumber] = useState(1);
   const [isFetched, setIsFetched] = useState(false);
   const [categoryUrl, setCategoryUrl] = useState('');
@@ -79,12 +78,8 @@ const Products = () => {
 
         if (response.ok) {
           const data = await response.json();
-          console.log('Cart data:', data.data.items);
-          dispatch(updateCart(data.data.items));
-          dispatch(updateCart(data.data.items));
-          setCartData(data);  // Postavljanje podataka u state
+          console.log('Cart data:', data.data.items);          
           dispatch(updateCart(data.data.items));          
-          setCartData(data);  // Postavljanje podataka u state
         } else {
           console.error('Error fetching cart data:', response.statusText);
         }

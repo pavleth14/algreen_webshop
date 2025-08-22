@@ -237,6 +237,9 @@ const Product = () => {
               <Link to="/cart" className="btn btn-dark mx-3">
                 Go to Cart
               </Link>
+              <Link to="/product" className="btn btn-dark mx-3">
+                Back
+              </Link>
             </div>
           </div>
         </div>
